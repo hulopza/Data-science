@@ -1,16 +1,50 @@
 import sys
-
+import pandas as pd
+import numpy as np
+import nltk
+from nltk.stem import WordNetLemmatizer
+from nltk.tokenize import word_tokenize
+nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger'])
+import re
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.datasets import make_multilabel_classification
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split, GridSearchCV
 
 def load_data(database_filepath):
-    pass
+    df = pd.read_sql_table('Messages', database_filepath)
+    X = df['message']
+    Y = df.iloc[:,2:]
+    category_names = Y.columns
+
+    return X, Y, category_names
 
 
 def tokenize(text):
-    pass
+    text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())#Remove punctuation
+    lemmatizer = WordNetLemmatizer() #Lemmatize words
+    tokens = word_tokenize(text) # tokenize each word in the message
+    clean_tokens = []
+    
+    for token in tokens:
+        clean_token = lemmatizer.lemmatize(token).strip()
+        clean_tokens.append(clean_token)
+    
+    return clean_tokens #return list of clean tokens for the given message
 
 
 def build_model():
-    pass
+    model = Pipeline([
+            ('vect_tfidf', TfidfVectorizer(tokenizer=tokenize)),
+            ('model', MultiOutputClassifier(LogisticRegression())) 
+        ])
+    
+    
+    return model
+
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
