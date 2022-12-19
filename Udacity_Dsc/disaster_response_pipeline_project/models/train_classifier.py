@@ -13,6 +13,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split, GridSearchCV
+import pickle
 
 def load_data(database_filepath):
     df = pd.read_sql_table('Messages', database_filepath)
@@ -41,6 +42,14 @@ def build_model():
             ('vect_tfidf', TfidfVectorizer(tokenizer=tokenize)),
             ('model', MultiOutputClassifier(LogisticRegression())) 
         ])
+
+    parameters = {
+    'vect_tfidf__ngram_range': ((1,1), (1,2)),
+    'model__estimator__class_weight': (None, 'balanced'),
+    'model__estimator__penalty': ('l1', 'l2')   
+    }
+
+    model = GridSearchCV(model, param_grid=parameters)
     
     
     return model
@@ -48,11 +57,21 @@ def build_model():
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    pass
+    
+    y_pred = model.predict(X_test)
+    accuracy = (y_pred == Y_test).mean()
+    best_param = model.best_params_
+
+    print('Categories in model: ', category_names)
+
+    print('Best parameters are: ', best_param)
+    print('Model Accuracy: ', accuracy)
 
 
 def save_model(model, model_filepath):
-    pass
+
+    pickle.dump(model, open(model_filepath), 'wb')
+    
 
 
 def main():

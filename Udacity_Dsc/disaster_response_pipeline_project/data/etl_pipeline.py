@@ -37,6 +37,11 @@ def load_data(messages_filepath, categories_filepath):
         #convert column from string to numeric
 
         categories_df[column] = pd.to_numeric(categories_df[column])
+        #drop all columns which sum is equal to the df length or which sum is zero
+        if categories_df[column].sum() == len(categories_df) or categories_df[column].sum()==0:
+
+            categories_df.drop(column, axis=1, inplace=True)
+
 
 
     #Replace categories column in df with new category columns
@@ -62,22 +67,6 @@ def clean_data(df):
     #Update "child_alone" name to child_alone_DUMMY and update values to 1 since these are always 0 in this dataset
     df.rename(columns = {'child_alone' : 'child_alone_DUMMY'}, inplace=True)
     df['child_alone_DUMMY'] = 1
-
-
-    #Remove all rows with only one class label, model used: MultiOutputClassifier(LogissticRegression()), will not work with only one label
-    index_lst = []
-
-    for i in range(len(df)):
-        row_sum = df.iloc[i,2:].sum(axis=0)
-
-        if row_sum == 1:
-            index_lst.append(row_sum)
-
-    
-    #Drop all rows from index_lst
-
-    df.drop(df.iloc[index_lst].index, inplace=True)
-
 
     
     return df
