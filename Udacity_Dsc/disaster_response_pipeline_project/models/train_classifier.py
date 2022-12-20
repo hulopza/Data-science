@@ -11,6 +11,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.preprocessing import StandardScaler
 import pickle
 
 def load_data(database_filepath):
@@ -18,7 +19,6 @@ def load_data(database_filepath):
     X = df['message']
     Y = df.iloc[:,2:]
     category_names = Y.columns
-    print('Database is: ', df.head())
 
     return X, Y, category_names
 
@@ -37,15 +37,14 @@ def tokenize(text):
 
 
 def build_model():
-    pipeline = Pipeline([
+    pipeline = Pipeline(steps=[
             ('vect_tfidf', TfidfVectorizer(tokenizer=tokenize)),
-            ('model', MultiOutputClassifier(LogisticRegression(max_iter=200))) 
+            ('model', MultiOutputClassifier(LogisticRegression(max_iter=500))) 
         ])
 
     parameters = {
     'vect_tfidf__ngram_range': ((1,1), (1,2)),
-    'model__estimator__class_weight': (None, 'balanced'),
-    'model__estimator__penalty': ('l1', 'l2')   
+     'model__estimator__class_weight': (None, 'balanced')
     }
 
     model = GridSearchCV(pipeline, param_grid=parameters)
@@ -62,13 +61,14 @@ def evaluate_model(model, X_test, Y_test, category_names):
     best_param = model.best_params_
 
     print('Best parameters are: ', best_param)
-    print('Classification report: ', classification_report(Y_test, y_pred, target_names=category_names))
+    print('Precission is: ', precission)
+    print('Model score: ', model.score(X_test, Y_test))
    
 
 
 def save_model(model, model_filepath):
 
-    pickle.dump(model, open(model_filepath), 'wb')
+    pickle.dump(model, open(model_filepath, 'wb'))
     
 
 
@@ -77,7 +77,7 @@ def main():
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
         X, Y, category_names = load_data(database_filepath)
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
+        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.33)
         
         print('Building model...')
         model = build_model()

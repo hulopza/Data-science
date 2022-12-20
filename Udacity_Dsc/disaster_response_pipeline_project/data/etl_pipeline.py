@@ -48,6 +48,7 @@ def load_data(messages_filepath, categories_filepath):
 
     df.drop('categories', axis=1, inplace=True) #Drop previous categories column
     df = pd.concat([df, categories_df], axis=1) #Concatenate the original dataframe with the new "categories_df" dataframe
+   
 
 
 
@@ -59,14 +60,16 @@ def load_data(messages_filepath, categories_filepath):
 def clean_data(df):
     #check for duplicates
     if len(df[df.duplicated() == True]) > 0:
-        df = df[df.duplicated()==False] #Update df to only unique rows
+        df_final = df[df.duplicated()==False].copy() #Update df to only unique rows
 
     #Drop "id" and "original" columns, not needed for model
-    df.drop(['id', 'original'], axis=1, inplace=True)
+    df_final.drop(['id', 'original'], axis=1, inplace=True)
+
+    print('Final columns are: ', df_final.columns)
 
   
     
-    return df
+    return df_final
 
 
     
@@ -89,10 +92,10 @@ def main():
         df = load_data(messages_filepath, categories_filepath)
 
         print('Cleaning data...')
-        df = clean_data(df)
+        df_final = clean_data(df)
         
         print('Saving data...\n    DATABASE: {}'.format(database_filepath))
-        save_data(df, database_filepath)
+        save_data(df_final, database_filepath)
         
         print('Cleaned data saved to database!')
     
