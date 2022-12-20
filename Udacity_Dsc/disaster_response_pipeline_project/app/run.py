@@ -7,7 +7,7 @@ from nltk.tokenize import word_tokenize
 
 from flask import Flask
 from flask import render_template, request, jsonify
-from plotly.graph_objs import Bar
+from plotly.graph_objects import Bar
 import joblib
 from sqlalchemy import create_engine
 
@@ -39,12 +39,14 @@ model = joblib.load("../models/classifier.pkl")
 def index():
     
     # extract data needed for visuals
-    # TODO: Below is an example - modify to extract data for your own visuals
+    # : Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
+    categories_counts =  df.iloc[:,2:].sum().sort_values(ascending=True)[-5:]
+    categories_names = categories_counts.index
     
     # create visuals
-    # TODO: Below is an example - modify to create your own visuals
+    # : Below is an example - modify to create your own visuals
     graphs = [
         {
             'data': [
@@ -63,6 +65,24 @@ def index():
                     'title': "Genre"
                 }
             }
+        },
+        {
+        'data' : [
+            Bar(
+                x=categories_names,
+                y=categories_counts
+            )
+        ],
+        'layout' : {
+            'title' : '5 Most common categories',
+            'yaxis': {
+                'title' : "Count"
+            },
+
+            'xaxis' : {
+                'title' : "Category"
+            }
+        }
         }
     ]
     
@@ -82,7 +102,7 @@ def go():
 
     # use model to predict classification for query
     classification_labels = model.predict([query])[0]
-    classification_results = dict(zip(df.columns[4:], classification_labels))
+    classification_results = dict(zip(df.columns[2:], classification_labels))
 
     # This will render the go.html Please see that file. 
     return render_template(
