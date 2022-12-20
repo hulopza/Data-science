@@ -62,7 +62,7 @@ def evaluate_model(model, X_test, Y_test, category_names):
     best_param = model.best_params_
 
     print('Best parameters are: ', best_param)
-    print('Classification report: ', classification_report(Y_test, y_pred, target_names==category_names))
+    print('Classification report: ', classification_report(Y_test, y_pred, target_names=category_names))
    
 
 
