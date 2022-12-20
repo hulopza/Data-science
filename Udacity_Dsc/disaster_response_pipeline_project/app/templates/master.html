@@ -69,7 +69,7 @@
     </div>
 </div>
 <script type="text/javascript">
-    const graphs = {{ graphJSON | safe }}; 
+    const graphs = {{ graphJSON | safe }}; //Problem here, need help
     for(let i in graphs) {
         Plotly.plot(ids[i], graphs[i].data, graphs[i].layout);
     }
