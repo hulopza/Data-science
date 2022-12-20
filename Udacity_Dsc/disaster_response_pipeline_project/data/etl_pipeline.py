@@ -64,10 +64,7 @@ def clean_data(df):
     #Drop "id" and "original" columns, not needed for model
     df.drop(['id', 'original'], axis=1, inplace=True)
 
-    #Update "child_alone" name to child_alone_DUMMY and update values to 1 since these are always 0 in this dataset
-    df.rename(columns = {'child_alone' : 'child_alone_DUMMY'}, inplace=True)
-    df['child_alone_DUMMY'] = 1
-
+  
     
     return df
 
@@ -76,8 +73,8 @@ def clean_data(df):
 
 
 def save_data(df, database_filepath):
-    engine = create_engine(database_filepath) #Create a SQL engine to save table to
-    df.to_sql('Messages', engine, index=False)
+    engine = create_engine('sqlite:///'+database_filepath) #Create a SQL engine to save table to
+    df.to_sql('Messages_categories', engine, index=False)
 
 
 

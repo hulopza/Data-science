@@ -1,25 +1,24 @@
 import sys
 import pandas as pd
-import numpy as np
 import nltk
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
-nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger'])
+nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger', 'omw-1.4'])
 import re
 from sklearn.multioutput import MultiOutputClassifier
-from sklearn.pipeline import Pipeline, FeatureUnion
-from sklearn.datasets import make_multilabel_classification
+from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split, GridSearchCV
 import pickle
 
 def load_data(database_filepath):
-    df = pd.read_sql_table('Messages', database_filepath)
+    df = pd.read_sql_table('Messages_categories', 'sqlite:///'+ database_filepath)
     X = df['message']
     Y = df.iloc[:,2:]
     category_names = Y.columns
+    print('Database is: ', df.head())
 
     return X, Y, category_names
 
@@ -38,9 +37,9 @@ def tokenize(text):
 
 
 def build_model():
-    model = Pipeline([
+    pipeline = Pipeline([
             ('vect_tfidf', TfidfVectorizer(tokenizer=tokenize)),
-            ('model', MultiOutputClassifier(LogisticRegression())) 
+            ('model', MultiOutputClassifier(LogisticRegression(max_iter=200))) 
         ])
 
     parameters = {
@@ -49,7 +48,7 @@ def build_model():
     'model__estimator__penalty': ('l1', 'l2')   
     }
 
-    model = GridSearchCV(model, param_grid=parameters)
+    model = GridSearchCV(pipeline, param_grid=parameters)
     
     
     return model
@@ -59,13 +58,12 @@ def build_model():
 def evaluate_model(model, X_test, Y_test, category_names):
     
     y_pred = model.predict(X_test)
-    accuracy = (y_pred == Y_test).mean()
+    precission = (y_pred == Y_test).mean()
     best_param = model.best_params_
 
-    print('Categories in model: ', category_names)
-
     print('Best parameters are: ', best_param)
-    print('Model Accuracy: ', accuracy)
+    print('Classification report: ', classification_report(Y_test, y_pred, target_names==category_names))
+   
 
 
 def save_model(model, model_filepath):
