@@ -14,6 +14,7 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler
 import pickle
 
+#Function to load Messages_categories table from database
 def load_data(database_filepath):
     df = pd.read_sql_table('Messages_categories', 'sqlite:///'+ database_filepath)
     X = df['message']
@@ -22,7 +23,7 @@ def load_data(database_filepath):
 
     return X, Y, category_names
 
-
+#Tokenize function for pipeline
 def tokenize(text):
     text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())#Remove punctuation
     lemmatizer = WordNetLemmatizer() #Lemmatize words
@@ -36,6 +37,8 @@ def tokenize(text):
     return clean_tokens #return list of clean tokens for the given message
 
 
+
+#Function that defines the pipeline and parameters to use in GridSearch
 def build_model():
     pipeline = Pipeline(steps=[
             ('vect_tfidf', TfidfVectorizer(tokenizer=tokenize)),
@@ -53,7 +56,7 @@ def build_model():
     return model
 
 
-
+#Function that shows the precission per class and the overall model score, and the best parameters found by gridsearch
 def evaluate_model(model, X_test, Y_test, category_names):
     
     y_pred = model.predict(X_test)
@@ -65,7 +68,7 @@ def evaluate_model(model, X_test, Y_test, category_names):
     print('Model score: ', model.score(X_test, Y_test))
    
 
-
+#Function that saves model as a pickle file
 def save_model(model, model_filepath):
 
     pickle.dump(model, open(model_filepath, 'wb'))

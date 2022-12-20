@@ -74,7 +74,7 @@ def clean_data(df):
 
     
 
-
+#Function that saves Messages_categories table into a sqlite database
 def save_data(df, database_filepath):
     engine = create_engine('sqlite:///'+database_filepath) #Create a SQL engine to save table to
     df.to_sql('Messages_categories', engine, index=False)
