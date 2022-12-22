@@ -16,30 +16,82 @@ import pickle
 
 #Function to load Messages_categories table from database
 def load_data(database_filepath):
-    df = pd.read_sql_table('Messages_categories', 'sqlite:///'+ database_filepath)
-    X = df['message']
-    Y = df.iloc[:,2:]
-    category_names = Y.columns
+     """
+     Function that loads the table for the model to train.
 
-    return X, Y, category_names
+
+
+     Parameters:
+     database_filepath: filepath where to find the desired table 'Messages_categories'
+
+     Returns:
+     X: Message column with all messages to vectorize for training
+     Y: All class binary columns for training the model
+     category_names: All names of the categories that the model can predict
+     """
+
+
+
+     df = pd.read_sql_table('Messages_categories', 'sqlite:///'+ database_filepath)
+     X = df['message']
+     Y = df.iloc[:,2:]
+     category_names = Y.columns
+
+     return X, Y, category_names
 
 #Tokenize function for pipeline
 def tokenize(text):
-    text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())#Remove punctuation
-    lemmatizer = WordNetLemmatizer() #Lemmatize words
-    tokens = word_tokenize(text) # tokenize each word in the message
-    clean_tokens = []
+     """
+     Function that tokenizes each word
+     Removes all punctuation and lemmatizes words with WordNetLemmatizer
+     Lower cases and strips the words and appends to clean list
+
+
+
+     Parameters:
+     text: The text to be tokenized
+
+     Returns:
+
+     clean_tokens: list of clean tokens for the given text
+     """
+
+
+
+
+
+     text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())#Remove punctuation
+     lemmatizer = WordNetLemmatizer() #Lemmatize words
+     tokens = word_tokenize(text) # tokenize each word in the message
+     clean_tokens = []
     
-    for token in tokens:
+     for token in tokens:
         clean_token = lemmatizer.lemmatize(token).strip()
         clean_tokens.append(clean_token)
     
-    return clean_tokens #return list of clean tokens for the given message
+     return clean_tokens #return list of clean tokens for the given message
 
 
 
 #Function that defines the pipeline and parameters to use in GridSearch
 def build_model():
+
+    """
+     Function that builds prediction model
+
+     create a pipeline for the data to be processed and creates model object with 
+     GridSearch for training the model
+
+
+
+     Parameters:
+     None
+
+     Returns:
+
+     model: Object for training X and Y data
+     """
+
     pipeline = Pipeline(steps=[
             ('vect_tfidf', TfidfVectorizer(tokenizer=tokenize)),
             ('model', MultiOutputClassifier(LogisticRegression(max_iter=500))) 
@@ -58,6 +110,24 @@ def build_model():
 
 #Function that shows the precission per class and the overall model score, and the best parameters found by gridsearch
 def evaluate_model(model, X_test, Y_test, category_names):
+    """
+     Function that evaluates the model prediction scores and best parameters
+
+     shows the best barameters found by GridSearchCV, the precission of the model per class and the model score
+
+
+
+
+
+     Parameters:
+     None
+
+     Returns:
+
+     None
+     """
+
+    
     
     y_pred = model.predict(X_test)
     precission = (y_pred == Y_test).mean()
@@ -71,12 +141,40 @@ def evaluate_model(model, X_test, Y_test, category_names):
 #Function that saves model as a pickle file
 def save_model(model, model_filepath):
 
-    pickle.dump(model, open(model_filepath, 'wb'))
+     """
+     Function that saves trained model into pkl file
+
+
+     Parameters:
+
+     model: trained model
+     model_filepath: filepath to save pkl file
+
+     Returns:
+     None
+     """
+
+     pickle.dump(model, open(model_filepath, 'wb'))
     
 
 
 def main():
-    if len(sys.argv) == 3:
+    
+     """
+     Function that runs all the model training
+
+     Loads data and trains model with pipeline and gridsearch
+
+
+     Parameters:
+
+     model: trained model
+     model_filepath: filepath to save pkl file
+
+     Returns:
+     None
+     """
+     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
         X, Y, category_names = load_data(database_filepath)
@@ -96,7 +194,7 @@ def main():
 
         print('Trained model saved!')
 
-    else:
+     else:
         print('Please provide the filepath of the disaster messages database '\
               'as the first argument and the filepath of the pickle file to '\
               'save the model to as the second argument. \n\nExample: python '\

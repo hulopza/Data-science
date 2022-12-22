@@ -10,6 +10,26 @@ from sqlalchemy import create_engine
 #Function that takes two csv file paths, mereges tha data and returns a dataframe ready for cleaning
 
 def load_data(messages_filepath, categories_filepath):
+
+    """
+    Function that loads data for cleaning
+
+    Function loads tables from csv files and prepares for cleaning by converting
+    class categories to binary.
+    Drops any columns that have the same value in all rows, this to ensure no errors in training
+
+    Parameters:
+    messages_filepath: filepath of csv file for the messages.
+    categories_filepath: filepath of csv file for categories.
+
+    Returns:
+    df: dataframe with merged messages and categories with binary class values.
+
+    """
+
+
+
+
     #--------------------------------------Loading data from files--------------------------------------------------------
     messages_df = pd.read_csv(messages_filepath)#load messages data
     categories_df = pd.read_csv(categories_filepath)#load categories data
@@ -28,7 +48,7 @@ def load_data(messages_filepath, categories_filepath):
     categories_df.columns = category_colnames #Update column names for category dataframe
 
 
-    #-Convert category values to numbers 0 or 1
+    #-Convert category values to numbers and drop columns with same values in all rows
 
     for column in categories_df:
         #set each value to be the last character of the string, converting to integer as well
@@ -48,6 +68,7 @@ def load_data(messages_filepath, categories_filepath):
 
     df.drop('categories', axis=1, inplace=True) #Drop previous categories column
     df = pd.concat([df, categories_df], axis=1) #Concatenate the original dataframe with the new "categories_df" dataframe
+    df.reset_index(inplace=True)
    
 
 
@@ -58,14 +79,48 @@ def load_data(messages_filepath, categories_filepath):
 # Funcion to clean dataframe (remove duplicates and prepare dataframe for prediction model)
 
 def clean_data(df):
+    
+    """
+    Function that cleans data prepared for training.
+
+    Drops all duplicated rows and any that are not binary (1, 0)
+    Drops unecessary columns 'id' and 'original'   
+
+    Parameters:
+    df: dataframe with messages and categories ready for training
+
+    Returns:
+    df: dataframe with merged messages and categories with binary class values.
+
+    """
+
+
+
     #check for duplicates
     if len(df[df.duplicated() == True]) > 0:
         df_final = df[df.duplicated()==False].copy() #Update df to only unique rows
 
+    #Drop all rows that have value 2 instead of 0 or 1
+    index_lst = [] #Index list to drop all values 
+
+    #Loop to get all index values
+    for column in df_final:
+        for i in range(len(df_final)):
+             if df_final[column][i]==2:
+                 index_lst.append(i)
+
+    
+    df_final.drop(index_lst, inplace=True) #Drop all rows with "2" values
+           
+       
+    
+
+                
+
+
+
     #Drop "id" and "original" columns, not needed for model
     df_final.drop(['id', 'original'], axis=1, inplace=True)
-
-    print('Final columns are: ', df_final.columns)
 
   
     
@@ -76,13 +131,46 @@ def clean_data(df):
 
 #Function that saves Messages_categories table into a sqlite database
 def save_data(df, database_filepath):
+
+
+    """
+    Function saves dataframe to database
+
+    Saves new table as 'Messsages_categories'
+    If a table already exists it replaces it with the new df
+
+
+    Parameters:
+    df: dataframe with messages and categories ready for training
+    database_filepath: Where to store the new table
+
+    Returns:
+    None
+    """
     engine = create_engine('sqlite:///'+database_filepath) #Create a SQL engine to save table to
-    df.to_sql('Messages_categories', engine, index=False)
+    df.to_sql('Messages_categories', engine, index=False, if_exists='replace')
 
 
 
 
 def main():
+
+
+    """
+    Function that executes all the ETL functions
+
+    Extracts data from csv file paths.
+    Transforms and cleans the data for training.
+    Loads the data into the new database
+
+
+    Parameters:
+    None
+
+    Returns:
+    None
+    """
+
     if len(sys.argv) == 4:
 
         messages_filepath, categories_filepath, database_filepath = sys.argv[1:]
