@@ -97,20 +97,25 @@ def clean_data(df):
 
 
     #check for duplicates
+    
     if len(df[df.duplicated() == True]) > 0:
-        df_final = df[df.duplicated()==False].copy() #Update df to only unique rows
+        
+        df = df[df.duplicated()==False].copy() #Update df to only unique rows
 
+    
+    
     #Drop all rows that have value 2 instead of 0 or 1
+    
     index_lst = [] #Index list to drop all values 
 
     #Loop to get all index values
-    for column in df_final:
-        for i in range(len(df_final)):
-             if df_final[column][i]==2:
+    for column in df:
+        for i in range(len(df)):
+             if df[column][i]==2:
                  index_lst.append(i)
 
     
-    df_final.drop(index_lst, inplace=True) #Drop all rows with "2" values
+    df.drop(index_lst, inplace=True) #Drop all rows with "2" values
            
        
     
@@ -120,11 +125,11 @@ def clean_data(df):
 
 
     #Drop "id" and "original" columns, not needed for model
-    df_final.drop(['id', 'original'], axis=1, inplace=True)
+    df.drop(['id', 'original'], axis=1, inplace=True)
 
   
     
-    return df_final
+    return df
 
 
     
@@ -181,7 +186,7 @@ def main():
 
         print('Cleaning data...')
         df_final = clean_data(df)
-        
+        print('Data saved head:' ,df_final.head())
         print('Saving data...\n    DATABASE: {}'.format(database_filepath))
         save_data(df_final, database_filepath)
         

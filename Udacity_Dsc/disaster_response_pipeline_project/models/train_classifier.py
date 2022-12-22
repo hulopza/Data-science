@@ -34,7 +34,7 @@ def load_data(database_filepath):
 
      df = pd.read_sql_table('Messages_categories', 'sqlite:///'+ database_filepath)
      X = df['message']
-     Y = df.iloc[:,2:]
+     Y = df.iloc[:,3:]
      category_names = Y.columns
 
      return X, Y, category_names

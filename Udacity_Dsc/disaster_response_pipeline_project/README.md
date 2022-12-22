@@ -16,7 +16,8 @@ The project consits in building a machine learning pipeline of disaster response
         `python data/etl_pipeline.py data/disaster_messages.csv data/disaster_categories.csv data/DisasterResponse.db`
     - To run ML pipeline that trains classifier and saves
         `python models/train_classifier.py data/DisasterResponse.db models/classifier.pkl`
-    **IMPORTANT NOTE** : The model takes around took around 30 min to train. 
+    **IMPORTANT NOTE** : The model takes took around 20 min to train, attempted different classifers
+
 
 2. Run the following command in the app's directory to run your web app.
     `python run.py`
