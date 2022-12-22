@@ -42,7 +42,7 @@ def index():
     # : Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
-    categories_counts =  df.iloc[:,2:].sum().sort_values(ascending=True)[-5:]
+    categories_counts =  df.iloc[:,3:].sum().sort_values(ascending=True)[-5:]
     categories_names = categories_counts.index
     
     # create visuals
@@ -102,7 +102,7 @@ def go():
 
     # use model to predict classification for query
     classification_labels = model.predict([query])[0]
-    classification_results = dict(zip(df.columns[2:], classification_labels))
+    classification_results = dict(zip(df.columns[3:], classification_labels))
 
     # This will render the go.html Please see that file. 
     return render_template(
