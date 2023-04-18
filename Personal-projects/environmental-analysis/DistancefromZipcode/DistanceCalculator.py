@@ -144,7 +144,7 @@ def DistanceCalcs():
 
 DistanceCalcs()
 
-with open('./DistancefromZipcode/TestDistance.csv') as f:
+with open('TestDistance.csv') as f:
     st.download_button('Download a sample file for testing',f, 'TestFile.csv', 'text/csv' )
 
 
